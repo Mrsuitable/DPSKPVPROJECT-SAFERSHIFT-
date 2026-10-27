@@ -1,0 +1,10 @@
+{
+  "name": "Remix SaferShift - Driver Safety Intelligence",
+  "description": "Personalized, privacy-preserving edge driver fatigue and distraction monitor with real-time facial landmark analysis, adaptive calibration, and explainable safety alerts.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

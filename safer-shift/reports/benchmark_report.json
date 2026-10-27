@@ -1,0 +1,165 @@
+{
+  "standard": {
+    "mode": "standard",
+    "total_evaluated_duration_sec": 128.2,
+    "total_ground_truth_events": 11,
+    "true_positives": 11,
+    "false_positives": 1,
+    "false_negatives": 0,
+    "precision": 0.9167,
+    "recall": 1.0,
+    "f1_score": 0.9565,
+    "false_alarms_per_minute": 0.47,
+    "mean_detection_delay_sec": 0.0,
+    "category_metrics": {
+      "possible_yawning": {
+        "gt_count": 3,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "prolonged_eye_closure": {
+        "gt_count": 5,
+        "tp": 5,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.833,
+        "recall": 1.0,
+        "f1": 0.909
+      },
+      "sustained_distraction": {
+        "gt_count": 3,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "robustness_metrics": {
+      "glasses_yes": {
+        "gt_count": 4,
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "glasses_no": {
+        "gt_count": 7,
+        "tp": 7,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.875,
+        "recall": 1.0,
+        "f1": 0.933
+      },
+      "lighting_normal": {
+        "gt_count": 7,
+        "tp": 7,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.875,
+        "recall": 1.0,
+        "f1": 0.933
+      },
+      "lighting_low_light": {
+        "gt_count": 2,
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    }
+  },
+  "personalized": {
+    "mode": "personalized",
+    "total_evaluated_duration_sec": 128.2,
+    "total_ground_truth_events": 11,
+    "true_positives": 11,
+    "false_positives": 0,
+    "false_negatives": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "false_alarms_per_minute": 0.0,
+    "mean_detection_delay_sec": 0.0,
+    "category_metrics": {
+      "possible_yawning": {
+        "gt_count": 3,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "prolonged_eye_closure": {
+        "gt_count": 5,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "sustained_distraction": {
+        "gt_count": 3,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "robustness_metrics": {
+      "glasses_yes": {
+        "gt_count": 4,
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "glasses_no": {
+        "gt_count": 7,
+        "tp": 7,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "lighting_normal": {
+        "gt_count": 7,
+        "tp": 7,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "lighting_low_light": {
+        "gt_count": 2,
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    }
+  },
+  "false_alarm_reduction_pct": 100.0,
+  "total_evaluated_duration_sec": 128.2,
+  "ground_truth_count": 11
+}

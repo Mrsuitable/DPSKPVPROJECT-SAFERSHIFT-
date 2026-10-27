@@ -1,0 +1,661 @@
+# MASTER CODING AGENT PROMPT — SAFERSHIFT
+
+## Your role
+
+Act as a senior computer-vision engineer, Python developer, edge-AI specialist, UI developer, and software-testing engineer.
+
+Your task is to **build a complete, functioning project named SaferShift**, not merely explain how to build it or return example code.
+
+You have a strict two-day development constraint. Prioritize a working, reliable prototype with a distinctive technical contribution over unnecessary complexity.
+
+You have permission to inspect the project workspace, create and edit files, install compatible dependencies where possible, execute terminal commands, run tests, diagnose failures, and iteratively repair the implementation.
+
+Do not stop after writing a plan. Begin implementation immediately, test each major component, and continue until the achievable acceptance criteria are satisfied or a clearly documented blocker remains.
+
+When you encounter an ambiguity, choose a sensible implementation appropriate for a two-day student project rather than waiting for clarification.
+
+---
+
+# 1. PROJECT IDENTITY
+
+**Project name:** SaferShift
+
+**Full title:** Personalized, Privacy-Preserving Driver Safety Intelligence
+
+**Selected problem statement:** Edge-Optimized Driver Fatigue & Distraction Monitor.
+
+**Category:** Computer vision, edge AI, real-time monitoring, personalization, and road safety.
+
+### Project mission
+
+Build an offline driver-monitoring prototype that analyzes facial landmarks over time, calibrates relevant measurements to individual drivers, detects sustained visual indicators of possible fatigue or distraction, explains its warnings, and evaluates whether personalization reduces false alarms.
+
+### The core innovation
+
+Most basic prototypes rely on universal thresholds or classify each frame independently.
+
+SaferShift will implement two comparable detection modes:
+
+1. **Standard mode:** Uses shared, configurable baseline thresholds.
+2. **Personalized mode:** Adapts selected thresholds using the driver's own calibration measurements.
+
+Both modes will use the same underlying landmark model and comparable temporal detection logic.
+
+The project's main research question is:
+
+**Can personalized calibration reduce false alarms while preserving the detection of genuine fatigue indicators?**
+
+Treat this as a hypothesis to test. Never assume that personalization improves accuracy before collecting evidence.
+
+---
+
+# 2. DEVELOPMENT RULES
+
+Follow these rules throughout development.
+
+1. Build the smallest working version first, then expand it incrementally.
+2. Inspect the existing environment and Python version before installing dependencies.
+3. Use compatible, supported library APIs instead of copying outdated tutorials.
+4. Prefer straightforward, testable Python modules over unnecessary architectural complexity.
+5. Execute the application and tests; do not assume generated code works.
+6. Fix installation errors, import errors, runtime exceptions, and integration problems whenever possible.
+7. Never fabricate accuracy, recall, FPS, test results, or improvements.
+8. Do not store raw webcam footage by default.
+9. Do not add facial recognition, cloud APIs, databases, authentication systems, or a complex multi-agent architecture unless genuinely necessary.
+10. Keep a working version available throughout development. Do not replace functional code with an untested rewrite.
+11. If a feature is blocked, document the exact problem and complete the remaining feasible features.
+12. Use a clean, professional interface suitable for a project demonstration.
+
+At every milestone, summarize what has been implemented, what was tested, and what remains incomplete. Then continue working.
+
+---
+
+# 3. REQUIRED TECHNOLOGY STACK
+
+Use:
+
+- **Python** — core logic.
+- **OpenCV** — webcam access, video processing, and visualization.
+- **MediaPipe Face Landmarker or another compatible MediaPipe facial-landmark API** — facial landmark detection.
+- **NumPy** — numerical calculations.
+- **OpenCV solvePnP** — approximate head-pose estimation.
+- **Pandas** — telemetry and evaluation data.
+- **Streamlit** — dashboard.
+- **Plotly** — interactive time-series charts.
+- **scikit-learn** — evaluation metrics and confusion matrix.
+- **CSV** — local event and telemetry storage.
+- **pytest** or Python's built-in unittest framework — automated testing.
+
+Use CPU inference as the default.
+
+First determine which supported MediaPipe API works with the installed environment. If a local model file is required, document how it is obtained and where it is stored. Download model assets only during setup, when possible; do not require cloud inference at runtime.
+
+Create a `requirements.txt` with compatible dependencies. Pin versions where appropriate after checking the environment.
+
+Do not claim the target performance of 15 FPS unless it has been measured.
+
+---
+
+# 4. FEATURE A — REAL-TIME FACIAL ANALYSIS
+
+Implement a working inference pipeline that supports both a webcam and prerecorded video files.
+
+### Facial landmarks
+
+Track facial landmarks needed for the eyes, mouth, and approximate head pose.
+
+Handle:
+- No face detected.
+- Face temporarily moving out of the frame.
+- Missing or unreliable landmarks.
+- Multiple faces, using a documented and consistent subject-selection rule.
+- Camera initialization failures.
+- Video ending or becoming unavailable.
+- Lighting changes and temporary tracking interruptions.
+
+### Eye Aspect Ratio (EAR)
+
+Calculate the Eye Aspect Ratio using an appropriate set of facial landmarks.
+
+Use this metric to estimate whether the eye opening has decreased relative to its normal geometry.
+
+### Mouth Aspect Ratio (MAR)
+
+Calculate MAR to help identify sustained mouth opening and possible yawning events.
+
+Require temporal evidence rather than reporting a yawn from one frame.
+
+### Head pose
+
+Estimate approximate yaw and pitch with OpenCV solvePnP and documented facial reference points.
+
+Establish the neutral head pose during calibration. Detect sustained deviations rather than every brief head turn.
+
+Head-pose deviation is only a potential distraction indicator; it does not establish where the driver is looking or prove that the driver is distracted.
+
+### Blink tracking
+
+Detect blink events and calculate blinks per minute over a configurable sliding window.
+
+Prevent one blink from being counted repeatedly across consecutive frames.
+
+### Visual output
+
+Draw facial landmarks and display relevant metrics on the local monitoring window when useful.
+
+Make all metric calculations reusable by the temporal engine, calibration module, evaluation script, and dashboard.
+
+---
+
+# 5. FEATURE B — PERSONALIZED DRIVER CALIBRATION
+
+This is SaferShift's primary differentiator. Implement it as a real feature, not a decorative profile form.
+
+### Calibration workflow
+
+1. Let the driver create or select a local profile.
+2. Ask the driver to remain stationary and alert during calibration.
+3. Capture a short calibration session while the driver looks straight ahead, blinks naturally, and makes gentle left/right head movements.
+4. Measure baseline open-eye geometry and the neutral head position.
+5. Record suitable baseline mouth geometry where reliable.
+6. Compute calibration quality and determine whether the collected measurements are sufficient.
+7. Save only the necessary derived measurements and configuration values locally.
+8. Load the profile when that driver starts a subsequent monitoring session.
+
+Include a way to recalibrate or delete the profile.
+
+### Profile contents
+
+A profile may store:
+- A local profile identifier chosen by the user.
+- Baseline EAR statistics.
+- The selected eye-closure threshold.
+- Neutral yaw/pitch measurements and permitted deviations.
+- Relevant MAR baseline statistics.
+- Calibration duration and quality indicators.
+- Configuration version and calibration timestamp.
+
+Do not store face images, video recordings, or unnecessary identity information by default.
+
+Facial measurements can still be sensitive biometric data. Protect the local profile and provide clear deletion controls.
+
+### Adaptive threshold logic
+
+For each driver, calculate personalized thresholds from sufficiently reliable calibration observations.
+
+For example, the eye-closure threshold can be derived from robust statistics of that driver's open-eye EAR measurements, with configurable bounds and a safe fallback.
+
+Use robust statistics rather than trusting a single frame.
+
+Avoid blindly lowering thresholds whenever the driver appears sleepy or treating the current state as the baseline. Calibration must establish an alert, neutral reference state.
+
+If calibration quality is poor:
+- Inform the user.
+- Reject or request a repeat calibration when necessary.
+- Fall back to the standard detection configuration when appropriate.
+- Indicate that personalization is unavailable or limited.
+
+Personalization must not disable the required prolonged-eye-closure alert.
+
+**Important:** Do not claim that the system works perfectly for each driver. It must still be evaluated across different people and conditions.
+
+---
+
+# 6. FEATURE C — TEMPORAL FATIGUE AND DISTRACTION ENGINE
+
+Implement a sliding-window temporal engine that uses timestamps rather than assuming that every frame arrives at a constant rate.
+
+Use `time.monotonic()` or an equivalent monotonic clock to measure durations.
+
+### Required detection logic
+
+**1. Prolonged eye closure**
+
+Trigger an alert when reliably tracked eye closure persists for more than 1.5 consecutive seconds.
+
+Use temporal state tracking, not a single-frame decision.
+
+Define how missing landmarks and brief tracking failures affect event continuity. Avoid silently treating long intervals without valid measurements as confirmed eye closure.
+
+**2. Repeated blinking**
+
+Calculate the blink rate over a configurable time window. Treat unusually elevated rates as an experimental indicator rather than proof of fatigue.
+
+**3. Possible yawning**
+
+Detect sustained mouth-opening patterns and count discrete events with appropriate event separation.
+
+**4. Sustained head-pose deviation**
+
+Compare current head pose with the calibrated neutral position and require the deviation to persist for a configurable duration.
+
+**5. Tracking-quality warnings**
+
+When facial tracking becomes unreliable, indicate that the system cannot confidently assess the driver. Do not interpret a missing face as definitive evidence of fatigue.
+
+### Alert management
+
+Implement:
+- Separate alert types for possible fatigue, possible distraction, prolonged eye closure, and insufficient tracking.
+- Configurable thresholds and duration windows.
+- Alert cooldowns to prevent repeated warnings for the same continuous event.
+- Event start and end timestamps.
+- A recovery or cleared state when the condition ends.
+- Clear explanations of which measurements triggered each warning.
+
+Use a transparent rule-based risk indicator as an optional dashboard metric. If a numerical score is displayed, define the formula in the code and explain its limitations. Do not present it as a validated probability of fatigue.
+
+The system must never diagnose a person or guarantee that driving is safe.
+
+---
+
+# 7. FEATURE D — PRIVACY-PRESERVING LOCAL OPERATION
+
+The application should function without cloud-dependent inference.
+
+Implement:
+- Local webcam/video processing.
+- Local storage of derived driver calibration values.
+- Local CSV event logging.
+- No raw-video recording by default.
+- A control to delete a driver's calibration profile.
+- Separation between raw frame processing and persistent data storage.
+- A visible indication when the system cannot reliably assess the face.
+
+Do not implement facial identity recognition. The profile is for storing calibration settings, not proving who the driver is.
+
+Avoid storing names, images, or other personal information unless strictly needed.
+
+Write a privacy section in the README describing exactly what data is processed, what is stored, and how it can be deleted.
+
+---
+
+# 8. FEATURE E — LOCAL EVENT TELEMETRY
+
+Create a robust logging module.
+
+The CSV event log should contain suitable fields such as:
+
+- Timestamp.
+- Event type.
+- Detection mode.
+- Eye aspect ratio.
+- Mouth aspect ratio.
+- Approximate head-pose values.
+- Eye-closure duration, where applicable.
+- Blink-rate window.
+- Calibration status.
+- Warning reason.
+- Tracking-quality indicator.
+- Measured FPS.
+
+Record event-level details as well as periodic metric samples where useful.
+
+Avoid writing an unnecessarily large CSV file on every frame. Use configurable sampling intervals, buffered writes where appropriate, and immediate event writes.
+
+Handle missing files, empty logs, corrupt rows, and interrupted writes gracefully.
+
+Use synthetic sample data for UI development, but mark it explicitly as synthetic. Never mix simulated demonstration records into real evaluation results without clear labelling.
+
+---
+
+# 9. FEATURE F — STREAMLIT DASHBOARD
+
+Create a polished dashboard that reads local telemetry and displays recent measurements and events.
+
+### Required panels
+
+**Panel 1 — Monitoring status**
+- Standard or personalized mode.
+- Current calibration status.
+- Face-tracking status.
+- Latest measured FPS.
+- Recent alert status.
+
+**Panel 2 — EAR and MAR**
+- Interactive time-series charts.
+- Configurable display window.
+- Clearly labelled units or explicit statements that the values are dimensionless ratios.
+
+**Panel 3 — Head pose**
+- Yaw and pitch trends.
+- Calibrated reference lines.
+- Sustained deviations and alert markers.
+
+**Panel 4 — Event analytics**
+- Blink count and blinks per minute.
+- Possible yawning events.
+- Prolonged eye-closure events.
+- Possible distraction alerts.
+- Tracking-quality warnings.
+
+**Panel 5 — Explainable alert history**
+- Event timestamps.
+- Alert category.
+- Triggering measurements.
+- Duration.
+- Reason the event was raised.
+- Detection mode and calibration status.
+
+**Panel 6 — Profile controls**
+- Select or create a local profile.
+- Display calibration quality.
+- Recalibrate.
+- Delete a profile.
+- Compare standard and personalized modes.
+
+**Panel 7 — Export**
+- Download local telemetry as CSV.
+- Access the generated evaluation report.
+
+### Live display requirement
+
+Prefer a simple architecture that works reliably on a local computer.
+
+A recommended approach is:
+- `run_monitor.py` handles the webcam and temporal detector in a local OpenCV window and writes telemetry.
+- `streamlit run app.py` launches the dashboard in a separate process that reads the shared telemetry and refreshes periodically.
+
+The dashboard must not pretend that it is receiving live measurements if the monitoring process is stopped. Show a stale-data or disconnected status when appropriate.
+
+If a simpler integrated implementation proves more reliable in the current environment, use it, provided the required monitoring and dashboard functionality works.
+
+---
+
+# 10. FEATURE G — STANDARD VERSUS PERSONALIZED EVALUATION
+
+This is essential. Do not leave it until the last minute.
+
+Create an evaluation module that can operate on labelled prerecorded videos or an event-level annotation file.
+
+### Evaluation inputs
+
+Support a structured annotation format containing:
+- Video or recording identifier.
+- Start time.
+- End time.
+- Labelled event type.
+- Optional driver identifier or test condition.
+- Optional notes about lighting or glasses.
+
+Allow a small, manually labelled test set when a large public dataset is unavailable.
+
+Provide a sample annotation file and document its format.
+
+### Fair comparison
+
+Run standard and personalized modes on equivalent test clips using the same underlying landmark and temporal engine. Ensure that any difference is attributable to the selected calibration mode as far as the test design allows.
+
+Do not use the evaluation labels to tune thresholds on the same test clips and then present those results as independent performance.
+
+### Required metrics
+
+Calculate:
+- Event-level precision.
+- Event-level recall.
+- Event-level F1 score.
+- Confusion matrix.
+- False alarms per minute.
+- Detection delay for matched events.
+- Total evaluated duration.
+- Measured FPS.
+- Number of valid, missed, and unmatchable events.
+- Calibration success rate, where applicable.
+
+Define event matching criteria explicitly, including event type, temporal overlap or timing tolerance, and duplicate predictions.
+
+Do not simply classify every frame as an independent event to make the metrics appear more accurate.
+
+Generate a comparison table and appropriate charts showing standard versus personalized results.
+
+If there are insufficient labelled examples, report the limitation honestly and display the available sample counts.
+
+### Fairness and robustness checks
+
+Where sufficient test data exists, report results separately across:
+- Different drivers.
+- Glasses and no-glasses conditions.
+- Different lighting conditions.
+- Different camera positions or head orientations.
+
+Do not claim demographic fairness from a tiny or unrepresentative dataset. Describe these as robustness checks, and clearly explain the sample limitations.
+
+### Performance measurement
+
+Measure actual inference FPS, preferably reporting both typical throughput and the test conditions.
+
+The original requirement targets at least 15 FPS on the intended local CPU environment.
+
+Test whether the available computer meets this target. If it does not, investigate reasonable optimizations such as reducing frame resolution or processing frequency, then report the actual outcome.
+
+Never hardcode an FPS value or manufacture evaluation outputs.
+
+---
+
+# 11. REQUIRED PROJECT STRUCTURE
+
+Create a clean, maintainable project. Use this structure as a starting point and adapt it only when doing so improves reliability.
+
+```text
+safer-shift/
+├── app.py
+├── run_monitor.py
+├── requirements.txt
+├── README.md
+├── config.py
+├── .gitignore
+├── detector/
+│   ├── face_landmarks.py
+│   ├── eye_metrics.py
+│   ├── mouth_metrics.py
+│   ├── head_pose.py
+│   ├── temporal_engine.py
+│   └── alerts.py
+├── personalization/
+│   ├── calibration.py
+│   └── profiles.py
+├── telemetry/
+│   ├── event_logger.py
+│   └── metrics.py
+├── evaluation/
+│   ├── evaluate.py
+│   ├── event_matching.py
+│   └── sample_annotations.csv
+├── models/
+│   └── README.md
+├── data/
+│   └── README.md
+├── reports/
+│   └── README.md
+└── tests/
+    ├── test_eye_metrics.py
+    ├── test_temporal_engine.py
+    ├── test_calibration.py
+    ├── test_profiles.py
+    └── test_event_matching.py
+```
+
+Do not commit large model weights, private footage, or generated personal profiles to version control.
+
+---
+
+# 12. AUTOMATED TESTING
+
+Write automated tests for core logic that does not require a physical camera.
+
+Test at least:
+
+1. EAR calculation with valid and invalid landmark inputs.
+2. MAR calculation with valid and invalid landmark inputs.
+3. Eye closure shorter than the threshold does not cause a prolonged-closure alert.
+4. Eye closure lasting longer than 1.5 seconds triggers the configured alert.
+5. Brief tracking failure is handled according to the documented continuity rule.
+6. Repeated processing of the same ongoing event does not spam alerts.
+7. Missing landmarks produce an uncertainty/tracking state rather than a false conclusion.
+8. A valid calibration generates a profile.
+9. Poor calibration is rejected or marked as unreliable.
+10. Profiles can be reloaded and deleted.
+11. Event logs can be loaded when files are empty or partially invalid.
+12. Event matching and metric calculations work on small known synthetic examples.
+13. Personalized thresholds remain within configured safety bounds.
+14. Stopping or losing the monitoring process results in an appropriate dashboard status.
+
+Synthetic unit tests validate software logic only; they must not be presented as proof of real-world detection accuracy.
+
+Run the entire test suite after the implementation and repair failures before reporting completion.
+
+---
+
+# 13. USER EXPERIENCE AND DEMONSTRATION
+
+The completed prototype should support this flow:
+
+1. Launch the local monitor.
+2. Select standard or personalized mode.
+3. Create a driver profile if using personalized mode.
+4. Perform calibration while stationary and alert.
+5. Start monitoring from a webcam or prerecorded video.
+6. Observe the facial landmarks and live measurements.
+7. Observe warnings with explanations when test conditions trigger them.
+8. Open the Streamlit dashboard.
+9. Inspect time-series graphs and the event history.
+10. Export telemetry.
+11. Run the evaluation script to compare standard and personalized modes.
+
+Include a prerecorded-video workflow so the demonstration remains possible when a webcam is unavailable.
+
+Never advise a user to deliberately induce fatigue, close their eyes while driving, or test alerts in an actively moving vehicle.
+
+---
+
+# 14. TWO-DAY PRIORITY PLAN
+
+Follow this order. Do not spend hours polishing the dashboard while the core detector is broken.
+
+## Phase 1 — Working vertical slice
+
+- Inspect the environment.
+- Set up dependencies.
+- Load a compatible facial-landmark model.
+- Process a webcam or prerecorded video.
+- Calculate EAR.
+- Detect a prolonged-eye-closure event.
+- Display a local warning.
+
+**Acceptance criterion:** The detector runs end-to-end on at least one available input source.
+
+## Phase 2 — Personalization and temporal logic
+
+- Add calibration.
+- Store and load local driver profiles.
+- Add personalized eye and head-pose thresholds.
+- Add MAR and head-pose calculations.
+- Add alert cooldowns, temporal rules, and tracking-quality handling.
+- Add CSV logging.
+
+**Acceptance criterion:** Both standard and personalized modes execute, and their settings and outputs can be inspected.
+
+## Phase 3 — Evaluation
+
+- Implement an annotation format.
+- Create a small labelled test set if an appropriate dataset is available.
+- Implement event matching and metrics.
+- Run the same recordings in both modes.
+- Generate a real comparison report.
+
+**Acceptance criterion:** The evaluation script runs and reports actual results, or clearly documents why the available labelled data is insufficient.
+
+## Phase 4 — Dashboard and delivery
+
+- Build the Streamlit dashboard.
+- Display telemetry and alert history.
+- Show local monitoring status.
+- Add export controls.
+- Finish tests and README.
+- Validate installation and launch commands.
+
+**Acceptance criterion:** The complete workflow can be demonstrated and the project instructions are usable.
+
+If time becomes limited, preserve the functional detector, personalized calibration, and valid comparison tests. Simplify dashboard styling before sacrificing these core features.
+
+---
+
+# 15. REQUIRED README
+
+Write a complete README containing:
+
+- Project overview.
+- Problem statement.
+- Main innovation.
+- Feature list.
+- Architecture diagram or Mermaid flowchart.
+- Prerequisites and compatible Python version.
+- Installation commands.
+- Model asset setup, if required.
+- Webcam-monitor launch command.
+- Dashboard launch command.
+- Prerecorded-video instructions.
+- Calibration and profile instructions.
+- Evaluation workflow.
+- Annotation file format.
+- Evaluation metrics and their interpretation.
+- Privacy and profile-deletion behavior.
+- Known limitations.
+- Safety disclaimer.
+- Actual test results and tested environment.
+
+Make sure all commands match the files and libraries that actually exist in the finished repository.
+
+---
+
+# 16. DEFINITION OF DONE
+
+The project is complete only when the following can be verified:
+
+- [ ] The main detector runs on a webcam or prerecorded video.
+- [ ] Facial landmarks are tracked and EAR/MAR are calculated.
+- [ ] Approximate yaw/pitch is estimated where tracking permits.
+- [ ] Prolonged eye closure is detected using the required 1.5-second rule.
+- [ ] Sustained head-pose deviations and possible yawning events are handled.
+- [ ] Standard and personalized modes are available.
+- [ ] Calibration is validated and profiles can be deleted.
+- [ ] Warnings identify their triggering evidence.
+- [ ] The system logs events locally without recording raw video by default.
+- [ ] The Streamlit dashboard displays actual logged telemetry.
+- [ ] An evaluation script reports defined performance metrics.
+- [ ] Standard and personalized modes can be compared on equivalent test material.
+- [ ] Automated tests pass, or remaining failures are clearly documented.
+- [ ] The measured FPS is reported honestly.
+- [ ] Installation and usage instructions work in the tested environment.
+
+Do not mark a feature complete because the code was written. Verify it through execution, testing, or a clearly documented limitation.
+
+---
+
+# 17. FINAL INSTRUCTIONS TO THE CODING AGENT
+
+Start now.
+
+First inspect the current working directory, Python version, available camera/model assets, and installed libraries.
+
+Then:
+1. Create a short task checklist.
+2. Implement Phase 1 immediately.
+3. Run the detector and verify the output.
+4. Add the remaining features in priority order.
+5. Run unit tests and the evaluation workflow.
+6. Inspect the finished repository for broken imports, missing assets, incorrect commands, and unsupported claims.
+7. Provide a final implementation report.
+
+The report must state:
+- What works.
+- What commands launch the monitor and dashboard.
+- Which tests passed and failed.
+- Actual FPS measured and under what conditions.
+- Whether the personalization comparison has been evaluated on labelled data.
+- Which features remain incomplete.
+- Any setup steps I must perform manually.
+
+Do not give me another long implementation plan in place of the application. Build the project in the workspace, execute it, fix errors, and leave it in a demonstrable state.
+
+**Project principle: Personalized detection must be tested, privacy must be built in, every warning must be explainable, and every performance claim must be supported by actual evidence.**

@@ -1,0 +1,12 @@
+recording_id,start_time,end_time,event_type,driver_id,lighting,glasses,notes
+rec_001_alert_driver,5.0,8.0,prolonged_eye_closure,driver_narrow_eyes,normal,no,Natural smaller baseline eye opening (baseline EAR ~0.24)
+rec_001_alert_driver,14.0,17.5,sustained_distraction,driver_narrow_eyes,normal,no,Checking side mirror and phone downwards
+rec_001_alert_driver,22.0,25.5,possible_yawning,driver_narrow_eyes,normal,no,Sustained yawn during late shift
+rec_002_glasses_driver,6.0,9.2,prolonged_eye_closure,driver_glasses,low_light,yes,Night driving with spectacles reflections
+rec_002_glasses_driver,18.0,21.0,sustained_distraction,driver_glasses,low_light,yes,Looking left out of window
+rec_003_wide_eye_driver,4.5,7.8,prolonged_eye_closure,driver_wide_eyes,normal,no,Large baseline EAR (~0.33)
+rec_003_wide_eye_driver,12.0,15.2,possible_yawning,driver_wide_eyes,normal,no,Deep yawn event
+rec_004_drowsy_shift,7.0,10.5,prolonged_eye_closure,driver_narrow_eyes,normal,no,Microsleep episode
+rec_004_drowsy_shift,16.0,19.5,sustained_distraction,driver_narrow_eyes,normal,no,Head tilted down looking at dashboard
+rec_005_glare_night,8.0,11.2,prolonged_eye_closure,driver_glasses,glare,yes,Oncoming headlight glare with eye closure
+rec_005_glare_night,19.0,22.0,possible_yawning,driver_glasses,glare,yes,Yawning with sunglasses/tinted frames
